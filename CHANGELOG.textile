@@ -1,0 +1,71 @@
+h1. Changelog
+
+h2. 0.4.0 - 2017-08-19
+
+* Compatible with Textpattern 4.6.2.
+
+h2. 0.3.0 - 2012-09-12
+
+* Compatible with Textpattern 4.5.0.
+* Fixed PHP strtolower() warnings.
+* Fixed file open warnings (thanks gomedia).
+* Unbundled password strength meter into separate plugin.
+
+h2. 0.2.0 - 2012-01-26
+
+* Performance boost.
+* Added separate XSS shield pref.
+* Altered callback signature: event="smd_frognostics" to avoid clashes with the admin side.
+* Fixed a few warnings.
+* Password strength meter integrated with smd_user_manager.
+* Fixed array_merge()-requires-array-argument snafu.
+* Added CSRF tokens.
+* Fixed rogue status message when viewing alarms panel.
+
+h2. 0.1.7 - 2010-12-30
+
+* Added injection sensitivity to try and minimise false positives on sites that accept comments.
+* Fixed loss of settings on switching prognostics subtab.
+
+h2. 0.1.6 - 2010-12-09
+
+* Never assume English button names (thanks roelof).
+
+h2. 0.1.5 - 2010-12-09
+
+* Improved warning display when saving preferences (thanks maniqui).
+* Skipped comment preview step for sql injections.
+* Fixed version number in frognostics.
+* Fixed display error on Advice panel.
+* Added @sql_injection@ callback.
+* Added RPC advice check.
+
+h2. 0.1.4 - 2010-11-16
+
+* Added forensic options for header spoofing/SQL injections.
+* Can now throw HTTP response code or custom message/form instead of 'nice try'.
+* Wildcard ability for ignored files.
+* Added user check and Txp dir option (thanks maverick).
+
+h2. 0.1.3 - 2010-11-15
+
+* Alarms panel now always displays all alerts and doesn't interfere with file checking rotation.
+* Fixed incorrect URL in acknowledge messages (thanks thebombsite) though multi-site installations may still be wrong.
+* Removed dumb admin-side SQL injection.
+* Added @Check files between@ and Txp version advice (all thanks ruud).
+* Tweaked injection detector.
+* Refactored e-mail header code.
+
+h2. 0.1.2 - 2010-11-12
+
+* Fixed white screen of death on Files _Save_ (binary files are now left unprocessed).
+* Improved performance.
+* Added file quantity check.
+
+h2. 0.1.1 - 2010-11-11
+
+* Added Ignore button.
+
+h2. 0.1.0 - 2010-11-11
+
+* Initial release.

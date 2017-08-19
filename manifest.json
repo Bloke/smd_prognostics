@@ -1,0 +1,11 @@
+{
+  "name": "smd_prognostics",
+  "description": "Pro-active diagnostics that alarm when things have changed in Textpattern CMS",
+  "version": "0.4.0",
+  "type": 1,
+  "author": "Stef Dawson",
+  "author_uri": "https://stefdawson.com/",
+  "order": 1,
+  "flags": 1,
+  "help": {"file" : ["./README.textile"]}
+}

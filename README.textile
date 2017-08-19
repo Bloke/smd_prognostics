@@ -1,0 +1,185 @@
+h1. smd_prognostics
+
+The _Admin -> Diagnostics_ panel is great if you remember to look at it from time to time. But if your server is compromised, how would you know about a sneaky Trojan or malware until your visitors complain or the search engines block your site?
+
+The answer is to use smd_prognostics to tell you when things have changed so you can take action immediately.
+
+h2. Features
+
+* Monitor files and attacks in and around your Textpattern installation.
+* Automatically detect any changes and display/send notification to designated user(s).
+* Customise where and how often the checks are performed.
+* Acknowledge known alterations and send repeat alarms at configurable intervals if the situation remains unchecked.
+
+h2. Installation / uninstallation
+
+*(warning)Requires Textpattern 4.6.2+*
+
+Download the plugin from either "GitHub":https://github.com/Bloke/smd_prognostics/releases, or the "software page":https://stefdawson.com/sw, paste the code into the Textpattern _Admin -> Plugins_ panel, install and enable the plugin. Note that it is recommended that the plugin runs as priority 1 so it can detect things before other plugins.
+
+To uninstall, delete from the _Admin -> Plugins_ panel. You may use smd_prefalizer to remove any @smd_prognostics_*@ preferences that the plugin created.
+
+Visit the "forum thread":https://forum.textpattern.io/viewtopic.php?id=34938 for more info or to report on the success or otherwise of the plugin.
+
+h2. Quick start: the three steps to detection
+
+# Visit _Extensions -> Prognostics_, alter the setup information to taste and *make sure you _Save_ it*
+# Click the Prognostic page's _Files_ button (ignore any warning about missing checksums for now: they've not been created yet) and choose the files you wish to monitor. *Make sure you _Save_ the changes*
+# Go about your business. If the filesystem changes you'll be told about it. Please consider helping to "make the plugin better":#smd_proghelp_better
+
+h2(#smd_proghelp_setup). Setup
+
+The _Prognostic setup_ page houses the following configuration options:
+
+h3. Monitoring options
+
+; %Check files on public side clicks%
+: Checks are always performed when people visit admin side tabs. You may also elect to check the files when visitors/bots browse your web site if you prefer (see "how it works":#smd_proghelp_howitworks for details).
+; %Check files (at most) every%
+: The plugin does not check the files every click because that would place unnecessary strain on the server. Instead you choose a configurable time -- in seconds -- after which the very next admin- or public-side click will trigger the check.
+; %Check files between%
+: Two times of day between which the files will be checked. You could set this to off-peak hours if you preferred to minimise the plugin's impact on daytime visitors.
+: Default: @00:00 => 23:59@
+; %Check this many files each time%
+: Instead of testing every single file each time -- which will slow down your site / admin side -- it is good practice to only check a subset of files every time the plugin is triggered.
+; %Alarm on detection and every%
+: When something has changed and it's detected, an alarm action is always taken. But if the plugin continually bombarded you with information it would be annoying and not as useful. This setting allows you to configure the interval between repeat nags of the same message. Once a day (the default of 86400 seconds) by e-mail is usually enough unless you're a masochist. Note that if more files are changed -- even when the timeout period has yet to elapse -- you will receive another alert.
+: You may specify two values (comma-separated) if you wish: the first is the time between notifications to the Textpattern admin side; the second is the time between e-mails. If you use only one value then it will be applied to both.
+; %Notify via%
+: Choose how you wish to be notified:
+:: _Txp Interface_ will display a message on the Textpattern admin side when a change is detected.
+:: _E-mail_ will send out an e-mail about the changes.
+; %Send e-mail to%
+: Comma-separated list of e-mail address recipients. If this is empty no e-mails will be sent, even if you choose to be notified via e-mail.
+; %Send forensics to%
+: Comma-separated list of e-mail address recipients to receive forensics data (the nattily-titled _frognostics_). You can choose nobody if you wish to disable this feature, or send them to yourself, or "to me for analaysis":#smd_proghelp_better. *Please note that some data is quite sensitive and may divulge paths to your files or site*. If you prefer to keep stuff private by all means sanitize the forensics and send the edited highlights to me for analysis if you wish.
+
+h3. Realtime options
+
+; %Block request headers%
+: If you enable this facility you can elect to block or allow certain types of speical HTTP request. Any request of a checked type will be blocked and a message will be returned instead of the page. The core types GET, POST, HEAD and OPTIONS are automatically allowed because Textpattern requires them. The remaining three -- TRACE, PUT and DELETE -- are specialist headers that aren't used by the core but may be required by some plugins. Permit them if you wish by clearing the relevant check box(es), otherwise for maximum protection keep this feature switched on with all three types of header checked.
+; %Protect against SQL injection%
+: Monitor incoming URLs for SQL injection attacks and deal with them in a variety of ways. When an attack is detected the request can be @Block@ed or you can send an HTTP status header so you can deal with the attack on your error pages. If you type anything in the @with@ box, the given message will be displayed on the page.
+: You may specify @txp_form:name-of-form@ in the @with@ box to hand off control to a custom form first before the result is thrown to the page. You could use this, for example, to mail off your own diagnostics or to make a decision on whether the SQL attack was legitimate or not and either block it yourself or strip out anything dodgy and send the request on. If you wish to go further, there is a "callback available":#smd_proghelp_callbacks.
+: The sensitivity may be altered by raising the number; 1 is the most sensitive (i.e. 1 of the trigger words will trip the switch). You can control GET and POST sensitivity independently by putting two comma-separated values in the box. If you accept comments on your site it may be prudent to raise the POST value (the second one), as any comment that contains words like @select@ or @union@ or even Textile's @--@ will trip the injector. A good trade-off betwen security and false alarms for a site with comments is @1, 3@. Raise further if your commenters regularly post code fragments or SQL statements.
+: There is also the option to employ an XSS(Cross-Site Scripting) shield which will encode all spurious characters to help prevent injection / cookie attacks. Note that because the comment preview step is always skipped (to avoid triggering on preview and annoying frognostic recipients), this may cause publicly submitted comments to not appear as previewed. Especially if angle brackets or tags are used in the comment text.
+; %Send forensics for%
+: E-mail frognostics info to the designated e-mail address(es) when either header violations, SQL injections, or both are detected.
+
+h3. Filesystem options
+
+; %Check files for%
+: Choose what type of alterations you wish to monitor: new files added, files deleted or files modified. By default, additions are not selected because it incurs a (tiny) extra processing penalty to the checks. Therefore if you want to monitor for additions, you need to opt-in.
+; %File locations%
+: Comma-separated list of directories from which you wish to be able to select files for monitoring. Choose only the top-level folder; everything beneath will automatically be selected. It defaults to your site root. If using a multi-site setup you may have to alter this.
+; %Exclude folders%
+: Since the list of files under your Textpattern installation may potentially be large you can designate some folders to be automatically excluded, which makes the file list shorter.
+: Default: @images, files, tmp@.
+; %Ignore files%
+: Some files, such as the error_log file on typical Linux hosts, pop up unannounced and you may periodically delete them. On development sites this can cause excessive alarms during debugging. To minimise this, you can list files here that you always wish to ignore. No paths are necessary: just supply a comma-separated list of file names. Wildcards (* and ?) are permissable.
+: Note that the prognostics checksums file is always treated as a special case so there's no need to list it explicitly.
+
+h3. Plugin options
+
+; %Restrict prognostic config to%
+: If you have to issue Publisher / Managing Editor privs to someone else as well as yourself but don't want anyone messing with the plugin settings, put a list of permitted user names in this box. %(warning)Be careful. The names are case-sensitive and if you misspell a name you can lock yourself out of editing the settings!%
+; %Admin-side URL%
+: The URL of your 'textpattern' admin side. This is usually @http://site.com/textpattern@ but if you are running "multi-site":#smd_proghelp_multisite or have otherwise altered the directory, you can specify it here.
+; %Prognostics folder%
+: The folder where the prognostics checksums file will reside. The directory must already exist and be writable, or your chosen location will be ignored. It is *highly recommended* that this folder be outside of your website document root, i.e. in a non-web-accessible location.
+; %Unique prefix%
+: Prefix the checksums file with this string. Useful to avoid files clashing if you are using the same (non-docroot) folder to store the checksums from more than one site.
+
+h2(#smd_proghelp_howitworks). How it works
+
+Ideally, the plugin would be a timed script that runs every N seconds. But that requires a particular piece of software (cron) on your host and there's no guarantee it exists. Thus the only thing that can 'trigger' the plugin is Textpattern itself. The plugin runs every time you interact with the admin side, but if it checked all the files against all the checksums you have chosen on every click, your admin side would slow down a lot. The compromise is to specify a timeout value and a number of files to check. This is how it works:
+
+# When you click a tab or interact with the admin side, the plugin looks at when you _last_ clicked something and asks "is it greater than N (seconds)?" where N is the value of @Check files (at most) every@ on the Setup panel. It also checks if the current time of day is between the values specified in @Check files between@.
+# If so, it grabs as many files as you have specified in @Check this many files each time@, tests them and resets the timer. It keeps a note of how far it has worked through your list of files and continues where it left off next time it runs.
+# If the value of N has not yet been reached, it does nothing, thus saving you precious processor cycles
+
+All that is great if you're continually using the admin side and producing clicks for the plugin to run. But once you hand over the site to your client, they may not use the admin side as often as you -- if at all. Thus your files would rarely/never be checked. To counteract this, you can ask the plugin to respond to public side clicks as well so that any time a visitor (or bot) crawls your pages the plugin runs, checks if the timeout has been exceeded and, if so, checks some files and resets the timer (exactly as it does on the admin side).
+
+This will push the processing load onto your public site, but since it's only run at most once every N seconds and you specify how many files to read each time, and at what times of day, you can control how much of an impact it has by matching your desire to know 'instantly' that something has changed versus the volume of traffic / visitors to the site and how often you want to delay their browsing.
+
+The good thing about being able to specify both the timeout, the time of day and the quantity of files is that you can determine if the plugin runs 'little and often' or takes more of your resources when it runs less frequently or during off-peak times. The recommendation is to run fairly frequently -- between 10 and 60 seconds is good -- and only processing a small number of files, say 20 or 30 each time.
+
+As an example, if you monitored every file in a stock Txp installation with a ten-second timeout and checked 30 files each time, then -- assuming you had at least five clicks per minute -- you would cycle through them in under a minute. And your visitors probably won't notice the delay. If you have fewer than five clicks per minute then it will take longer to cycle through the files and the chance of catching changes as they happen reduces. But if you run too often (say, every one or two seconds) you are wasting your visitors' time, your server's resources and increasing the chance of the plugin misinforming you of alterations (it may still be partway through the previous run when the next occurs and trigger a warning that something isn't right).
+
+The plugin is written to be as quick and efficient as it possibly can to avoid any delays; there may be "room for improvement":#smd_proghelp_better of course! Please be aware that no detection system is foolproof and there is no substitute for vigilance and "good passwords":https://stefdawson.com/blog/choosing-a-brilliant-password :-)
+
+h2(#smd_proghelp_monfiles). Monitoring files
+
+Clicking the _Files_ button takes you to a screen with a textarea that allows you to choose the files you wish to monitor. A count of the current number of monitored files is shown at the top, along with the number of files available in your chosen file location(s). The following files will be in the list:
+
+# all files in all subdirectories from all @File locations@ you specified to monitor in the Setup screen
+# _except_ any files below the directories you chose to exclude
+# _except_ any file names you explicitly chose to ignore
+# _except_ the prognostics checksums file
+
+At first, no files will be selected so you will be monitoring nothing. Choose which files you wish to monitor and save the changes. The plugin will keep tabs on those files.
+
+If you have elected to watch for additions to the file system, any files in any of your chosen locations that are not currently in the list at the time you hit _Save_ (regardless of whether you are monitoring them or not) will trigger an alarm. Go ahead and try it: add some files to your server or install a new theme or something and the plugin will tell you.
+
+h2(#smd_proghelp_ack). Acknowledging alarms
+
+If one or more files are altered, deleted, or new files have been added (depending on which actions you have elected to monitor) the plugin will detect this when the next admin- or public-side click is received and the timeout cycle is exceeded. It will then take the action you chose. Note of course that you won't see the admin-side warning if not logged in!
+
+The message delivered to you contains a link to the Acknowledgement page (which can also be reached by clicking the _Alarms_ button from the Prognostics panel). You are presented with a list of all the filesystem alterations. If you know about the changes -- e.g. you initiated them by uploading some new file version(s) -- then you can acknowlegde this by placing a check mark next to the files you know contain legitimate alterations. When you select _Acknowledge_ from the dropdown below the list, you signify to the plugin that you accept the changes. Thus the new file(s) become the baseline.
+
+If you are monitoring file system additions, the act of acknowledging the alarm indicates that you are happy for the new file(s) to be monitored. They will automatically be added to the list of Files to monitor (you can verify this by visiting the Prognostic panel's _Files_ list). If you know about some of the files (perhaps they are new additions) and you don't want to monitor them, select the file(s) and choose _Ignore_. The alarm will be acknowledged but you will not be monitoring the file(s).
+
+If you choose not to acknowledge/ignore some or all of the files, you will continue to be nagged at your designated alarm frequency until you acknowledge the problems or fix the filesystem to its original state. Do bear in mind when configuring the frequency that alerting too often can alienate users and make an alarm situation less effective.
+
+h2(#smd_proghelp_csi). Forensics
+
+*Before* acknowledging alarms, you may choose to send off forensics information to a designated e-mail address. The following information is sent:
+
+* File information about each changed/added file, such as its size, modification time, and user / group ownership
+* The contents of the files themselves, BASE-64 encoded in the body of the e-mail
+* The names & paths of any deleted files
+* Any Textpattern log entries that occurred either side of the alarm condition (logging must be enabled in your _Admin -> Preferences_)
+
+You can select which file information to send off via the check boxes. The ones you choose will remain selected for convenience after the forensics have been sent, so you may immediately _Acknowledge_ the ones you notified.
+
+h2(#smd_proghelp_advice). Advice
+
+Clicking the _Advice_ button will run through a series of checks and offer suggestions on how to harden your installation. The most important one to follow is if you are warned about the prognostics checksums file being in docroot. It is *highly recommended to move it somewhere non-web accessible*.
+
+h2(#smd_proghelp_callbacks). Callbacks
+
+The plugin has a callback of its own allowing you to perform custom SQL injection tests. Hook your own code into it by raising a callback on the event @smd_frognostics@ and step @sql_injection@. This callback fires on every page access if @Protect against SQL injection@ is enabled.
+
+Your code can return:
+
+* -1 to assert "no injection detected at all and do not run the plugin's SQL checks"
+* 0 to assert "no injection detected but run the plugin checks as well"
+* 1 to assert "injection detected" (plugin checks are bypassed)
+
+In all cases, the plugin will continue to process forensics evidence and HTTP redirection if the options are enabled. Bail out with an @exit()@ or @txp_die()@ if you wish the plugin to terminate instead.
+
+h2(#smd_proghelp_multisite). Multi-site setup
+
+If you are using Textpattern's multi-site feature there are some additional things to note:
+
+# You should set smd_prognostics up on _each_ domain you wish to protect to avoid overloading one domain with checking them all.
+# Choose just one of your domains as the 'master' which will monitor the Textpattern core files.
+# Consider moving all the domains in the @/sites@ folder outside docroot.
+# Ensure you employ a @Unique prefix@ or your checksums files will clash, causing odd behaviour. The recommended method is to use the @Prognostics folder@ setting to move all checksum files to a central location -- outside docroot -- and use the same directory for all domains. The @Unique prefix@ will then distinguish between them.
+# The @Admin-side URL@ may well be wrong: you should probably change this on each domain.
+
+h2(#smd_proghelp_better). Help make the plugin better
+
+If smd_prognostics does detect some rogue elements in your filesystem, please consider sending the forensics to prognostics [at] stefdawson [dot] com with as much information as you possibly can. You can either do this automatically from within the plugin (see the setup page, though note the sensitivity of some of the data sent) or copy and paste relevant information into an e-mail. The sort of stuff that might be useful is:
+
+* Textpattern (and/or server) logs for the time of the attack.
+* The lines of the file(s) that were affected (or the files in their entirety).
+* The content of any additional lines added or altered in the files.
+* Your Textpattern, PHP, MySQL and Apache versions.
+* Your hoster company name.
+
+and so on. Any and all information will be treated in the strictest confidence of course. Analysing this data may allow me to improve the plugin and perhaps close any security holes in Textpattern itself, or even help make the plugin more pro-active by detecting the various kinds of attack in progress and minimising damage to your file system. Thanks in advance for you help.
+
+h2. Author / credits
+
+Written by "Stef Dawson":https://stefdawson.com/contact. Many thanks to Kevin Potts and Steve Dickinson for beta testing and feature enhancements. Also kudos to Hugo Sousa for the phProtector class.
