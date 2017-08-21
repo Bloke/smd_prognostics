@@ -461,7 +461,7 @@ function smd_prognostics_request_headers($evt, $stp) {
 
 // ----------  SQL injection detection
 function smd_prognostics_sql_inject() {
-    global $smd_prognostics_sqlprot, $permlink_mode;
+    global $smd_prognostics_sqlprot, $permlink_mode, $DB;
 
     // Determine comment preview step and ignore if so
     $is_prevu = false;
@@ -488,7 +488,7 @@ function smd_prognostics_sql_inject() {
             $subject = gTxt('smd_prognostics_subject_csi');
             $hdrs = smd_prognostics_header_info('smd_frognostics');
             $body = n.gTxt('smd_prognostics_preamble_sql_inject').n;
-            $body .= (($ver) ? 'Txp: ' . $ver .n : '') . 'PHP: ' . phpversion() .n. 'MySQL: ' . mysql_get_server_info() .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '');
+            $body .= (($ver) ? 'Txp: ' . $ver .n : '') . 'PHP: ' . phpversion() .n. 'MySQL: ' . mysqli_get_server_info($DB->link) .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '');
             foreach ($_SERVER + $_REQUEST + $_ENV as $key => $var) {
                 $body .= n.$key.': '.$var;
             }
@@ -522,7 +522,7 @@ function smd_prognostics_sql_inject() {
 // ----------  Alarm acknowledgement
 function smd_prognostics_ack($msg = '')
 {
-    global $smd_prognostics_event, $smd_prognostics_checksums, $prefs;
+    global $smd_prognostics_event, $smd_prognostics_checksums, $prefs, $DB;
 
     $method = ps('edit_method');
     $submit = ($method == 'acknowledge');
@@ -689,7 +689,7 @@ EOS
             $subject = gTxt('smd_prognostics_subject_csi');
             $hdrs = smd_prognostics_header_info('smd_frognostics');
             $body =
-                n.'Txp: ' . txp_version .n. 'PHP: ' . phpversion() .n. 'MySQL: ' . mysql_get_server_info() .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '').
+                n.'Txp: ' . txp_version .n. 'PHP: ' . phpversion() .n. 'MySQL: ' . mysqli_get_server_info($DB->link) .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '').
                 ((isset($forensics['nok'])) ? n.gTxt('smd_prognostics_preamble_nok').n.join(n,$forensics['nok']) : '').
                 ((isset($forensics['miss'])) ? n.n.gTxt('smd_prognostics_preamble_miss').n.join(n,$forensics['miss']) : '').
                 ((isset($forensics['added'])) ? n.n.gTxt('smd_prognostics_preamble_added').n.join(n,$forensics['added']) : '').
@@ -1396,7 +1396,7 @@ class smd_prog_PhProtector {
     var $SHOW_ERRORS;
     var $do_xss;
 
-    public function smd_prog_PhProtector($show_errors) {
+    public function __construct($show_errors) {
         $this->SHOW_ERRORS=$show_errors;
         if ($this->SHOW_ERRORS) {
             error_reporting(E_ERROR | E_WARNING | E_PARSE);  //Show errors
