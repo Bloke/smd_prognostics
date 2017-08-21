@@ -1107,7 +1107,7 @@ function smd_prognostics_setup($msg = '')
 // ----------  Security advice
 function smd_prognostics_advice($msg = '')
 {
-    global $smd_prognostics_event, $prefs, $event;
+    global $smd_prognostics_event, $prefs, $event, $DB;
     require_once txpath.'/lib/IXRClass.php';
 
     pagetop(gTxt('smd_prognostics_ttl_advice'), $msg);
@@ -1162,7 +1162,7 @@ function smd_prognostics_advice($msg = '')
     // Does this MySQL user have FILES privs?
     $randfile = $prefs['tempdir'].DS.rand().time().'.sql';
     $res = @safe_query('SELECT id INTO OUTFILE "'.$randfile.'" FIELDS TERMINATED BY "\t" LINES TERMINATED BY "\n" FROM txp_image WHERE 1 LIMIT 1');
-    if (mysql_error() == '') {
+    if (mysqli_error($DB->link) == '') {
         $checks[] = gTxt('smd_prognostics_sql_file_privs');
         if (is_file($randfile)) {
             @unlink($randfile);
