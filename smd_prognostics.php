@@ -55,8 +55,10 @@ $plugin['flags'] = '1';
 // abc_string_name => Localized String
 
 $plugin['textpack'] = <<<EOT
-#@smd_prognostics
+#@language en, en-gb, en-us
+#@admin-side
 smd_prognostics => Prognostics
+#@smd_prognostics
 smd_prognostics_acked => Alarms acknowledged.
 smd_prognostics_alarm_freq => Alarm on detection and every: 
 smd_prognostics_and =>  and 
@@ -137,8 +139,8 @@ smd_prognostics_stat_mod => Modified:
 smd_prognostics_stat_name => Filename: 
 smd_prognostics_stat_size => Size: 
 smd_prognostics_stat_uid => User ID: 
-smd_prognostics_subject => Prognostics (dev.stefdawson.com)
-smd_prognostics_subject_csi => Prognostics (dev.stefdawson.com) forensics
+smd_prognostics_subject => Prognostics ({site})
+smd_prognostics_subject_csi => Prognostics ({site}) forensics
 smd_prognostics_tight => You run a pretty tight ship. Stay frosty.
 smd_prognostics_ttl_ack => Prognostic alarm acknowledgement
 smd_prognostics_ttl_advice => Prognostic advice
@@ -381,7 +383,7 @@ function smd_do_prognostics($mode = 0)
             $lastact_mail = ($mode < 2 && ($now - $lasts[1] > $freqs[1])) ? true : false;
             $lastmsg = get_pref('smd_prognostics_lastmsg', '');
 
-            $subject = gTxt('smd_prognostics_subject');
+            $subject = gTxt('smd_prognostics_subject', array('{site}' => get_pref('siteurl')));
             $msg = join('|', array_merge($hashdown, $hashmod, $nok, $miss, $added));
 
             if (txpinterface === 'admin' && strpos($via, 'txp') !== false) {
@@ -444,7 +446,7 @@ function smd_prognostics_request_headers($evt, $stp) {
         // Send the forensics off if necessary
         $to = get_pref('smd_prognostics_mailto_csi', '');
         if ($to && $send) {
-            $subject = gTxt('smd_prognostics_subject_csi');
+            $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
             $body = n.gTxt('smd_prognostics_req_not_allowed', array('{req}' => $hdr)).n;
             foreach ($_SERVER + $_REQUEST + $_ENV as $key => $var) {
@@ -485,7 +487,7 @@ function smd_prognostics_sql_inject() {
         // Send the forensics off if necessary
         $to = get_pref('smd_prognostics_mailto_csi', '');
         if ($to && $send) {
-            $subject = gTxt('smd_prognostics_subject_csi');
+            $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
             $body = n.gTxt('smd_prognostics_preamble_sql_inject').n;
             $body .= (($ver) ? 'Txp: ' . $ver .n : '') . 'PHP: ' . phpversion() .n. 'MySQL: ' . mysqli_get_server_info($DB->link) .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '');
@@ -686,7 +688,7 @@ EOS
         // Send the forensics off.
         $to = get_pref('smd_prognostics_mailto_csi', '');
         if ($to) {
-            $subject = gTxt('smd_prognostics_subject_csi');
+            $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
             $body =
                 n.'Txp: ' . txp_version .n. 'PHP: ' . phpversion() .n. 'MySQL: ' . mysqli_get_server_info($DB->link) .n. ((is_callable('apache_get_version')) ? 'Apache: ' . apache_get_version().n : '').
