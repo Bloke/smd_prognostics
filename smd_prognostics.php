@@ -1599,7 +1599,7 @@ h2. Features
 
 h2. Installation / uninstallation
 
-*(warning)Requires Textpattern 4.6.2+*
+*(warning)Requires Textpattern 4.7.2+*
 
 Download the plugin from either "GitHub":https://github.com/Bloke/smd_prognostics/releases, or the "software page":https://stefdawson.com/sw, paste the code into the Textpattern _Admin -> Plugins_ panel, install and enable the plugin. Note that it is recommended that the plugin runs as priority 1 so it can detect things before other plugins.
 
