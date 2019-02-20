@@ -1,9 +1,10 @@
 h1. Changelog
 
-h2. 0.4.1 - 2017-08-21
+h2. 0.4.1 - 2019-MM-DD
 
 * *Really* compatible with Textpattern 4.6.2.
-* Update to mysqli_() calls and PHP 5 class functiun signatures.
+* Update to mysqli_() calls and PHP 5 class function signatures.
+* Remove use of is_windows() and use IS_WIN instead.
 
 h2. 0.4.0 - 2017-08-19
 

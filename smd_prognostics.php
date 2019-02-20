@@ -1349,7 +1349,7 @@ function smd_prognostics_header_info($fromname) {
     $domain = $domainparts[$numparts-2] . '.' . $domainparts[$numparts-1];
     $reply_to = 'noreply@'.$domain;
     $txpdir = get_pref('smd_prognostics_txpdir', hu.smd_prognostics_guess_admin_dir());
-    $sep = is_windows() ? "\r\n" : "\n";
+    $sep = IS_WIN ? "\r\n" : "\n";
     $headers = "From: $fromname <$reply_to>".
         $sep.'Reply-To: '.$reply_to.
         $sep.'X-Mailer: Textpattern'.
