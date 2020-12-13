@@ -262,9 +262,11 @@ function smd_prognostics_inject_css($evt, $stp)
 
         if ($styles) {
             echo '<style type="text/css">';
+
             foreach ($styles as $style) {
                 echo $smd_prognostics_style[$style];
             }
+
             echo '</style>';
         }
     }
@@ -318,6 +320,7 @@ function smd_do_prognostics($mode = 0)
 
         if ($cs = @file($smd_prognostics_checksums)) {
             $hash = md5(smd_prognostics_prep_file($smd_prognostics_checksums));
+
             if ($hash != $sumhash) {
                 $hashmod[] = $smd_prognostics_checksums;
             } else {
@@ -325,21 +328,26 @@ function smd_do_prognostics($mode = 0)
                 $qty_per = (($qty = get_pref('smd_prognostics_check_qty', '')) == '') ? count($cs) : $qty;
                 $so_far = get_pref('smd_prognostics_qty_so_far', 0);
                 $until = $so_far + $qty_per;
+
                 foreach ($cs as $c) {
                     if (preg_match('@^(\S+): \((.*)\)$@', trim($c), $m)) {
                         list(,$file,$md5) = $m;
+
                         if ($dels && !file_exists($file)) {
                             $miss[] = $file;
-                        } else if ($mods && $md5 != 'NULL') {
+                        } elseif ($mods && $md5 != 'NULL') {
                             // Check file_exists last as it's the slowest operation; allows PHP to short circuit conditionals faster
                             if ( ( (($ctr >= $so_far) && ($ctr < $until) || $mode == 1) ) && file_exists($file) ) {
                                 $content = smd_prognostics_prep_file($file);
+
                                 if ((md5($content) != $md5) && ($file != $smd_prognostics_checksums)) {
                                     $nok[] = $file;
                                 }
                             }
+
                             $ctr++;
                         }
+
                         $allfiles[] = $file;
                     }
                 }
@@ -348,6 +356,7 @@ function smd_do_prognostics($mode = 0)
                 if ($mode != 1) {
                     set_pref('smd_prognostics_qty_so_far', (($until < $ctr) ? $until : 0), 'smd_prognos', PREF_HIDDEN, 'text_input');
                 }
+
                 if ($adds) {
                     $filelist = smd_prognostics_readfiles();
                     $added = array_diff($filelist, $allfiles);
@@ -365,16 +374,18 @@ function smd_do_prognostics($mode = 0)
 
     // Assemble message
     if ($nok || $miss || $added || $hashdown || $hashmod) {
-        if ($mode==1) {
+        if ($mode == 1) {
             return array($nok, $miss, $added, $hashdown, $hashmod);
         } else {
             $via = get_pref('smd_prognostics_notify_via', '');
             $detect = get_pref('smd_prognostics_lastdetect', '');
             $lasts = explode(',', get_pref('smd_prognostics_lastact', 0));
             $freqs = explode(',', get_pref('smd_prognostics_alarm_freq', 86400));
+
             if (!isset($lasts[1])) {
                 $lasts[1] = $lasts[0];
             }
+
             if (!isset($freqs[1])) {
                 $freqs[1] = $freqs[0];
             }
@@ -435,8 +446,10 @@ function smd_do_prognostics($mode = 0)
     }
 }
 
-// ----------  Catch unexpected request headers
-function smd_prognostics_request_headers($evt, $stp) {
+// ----------
+// Catch unexpected request headers
+function smd_prognostics_request_headers($evt, $stp)
+{
     $block = explode('|', get_pref('smd_prognostics_req_headers', ''));
     $hdr = serverSet('REQUEST_METHOD');
 
@@ -445,6 +458,7 @@ function smd_prognostics_request_headers($evt, $stp) {
 
         // Send the forensics off if necessary
         $to = get_pref('smd_prognostics_mailto_csi', '');
+
         if ($to && $send) {
             $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
@@ -452,7 +466,7 @@ function smd_prognostics_request_headers($evt, $stp) {
             foreach ($_SERVER + $_REQUEST + $_ENV as $key => $var) {
                 $body .= n.$key.': '.$var;
             }
-    
+
             mail($to, $subject, $body, $hdrs['headers']);
         }
 
@@ -461,8 +475,10 @@ function smd_prognostics_request_headers($evt, $stp) {
     }
 }
 
-// ----------  SQL injection detection
-function smd_prognostics_sql_inject() {
+// ----------
+// SQL injection detection
+function smd_prognostics_sql_inject()
+{
     global $smd_prognostics_sqlprot, $permlink_mode, $DB;
 
     // Determine comment preview step and ignore if so
@@ -472,13 +488,15 @@ function smd_prognostics_sql_inject() {
         'preview',
         'backpage',
     ));
+
     if ($com['preview']) {
         $urlparts = explode('/', $com['backpage']);
         $num = ($permlink_mode == 'messy') ? 1 : count($urlparts);
         $artic = safe_field('id','textpattern', "ID=".doSlash($com['parentid']).(($num > 1) ? " AND url_title='".doSlash($urlparts[$num-1])."'" : ''));
         $is_prevu = ($artic) ? true : false;
     }
-    if(!$is_prevu && $smd_prognostics_sqlprot->isMalicious()) {
+
+    if (!$is_prevu && $smd_prognostics_sqlprot->isMalicious()) {
         $opts = do_list(get_pref('smd_prognostics_sql_inject', '|'), '|');
         $blok = (strpos($opts[0], 'smd_block') !== false);
         $send = (strpos(get_pref('smd_prognostics_rt_forensics'), 'sql') !== false);
@@ -486,6 +504,7 @@ function smd_prognostics_sql_inject() {
 
         // Send the forensics off if necessary
         $to = get_pref('smd_prognostics_mailto_csi', '');
+
         if ($to && $send) {
             $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
@@ -521,7 +540,9 @@ function smd_prognostics_sql_inject() {
 // -----------------
 // Admin-side panels
 // -----------------
-// ----------  Alarm acknowledgement
+
+// ----------
+// Alarm acknowledgement
 function smd_prognostics_ack($msg = '')
 {
     global $smd_prognostics_event, $smd_prognostics_checksums, $prefs, $DB;
@@ -541,6 +562,7 @@ function smd_prognostics_ack($msg = '')
             foreach ($cs as $c) {
                 if (preg_match('@^(\S+): \((.*)\)$@', trim($c), $m)) {
                     list(,$file,$md5) = $m;
+
                     if (($key = array_search($file, $smd_prog_ack)) !== false) {
                         if (file_exists($file)) {
                             $content = smd_prognostics_prep_file($file);
@@ -572,7 +594,7 @@ function smd_prognostics_ack($msg = '')
 
     if ($csi && $smd_prog_ack) {
          $msg = gTxt('smd_prognostics_csi_sent');
-    } else if ($csi) {
+    } elseif ($csi) {
          $msg = gTxt('smd_prognostics_none_selected');
     }
 
@@ -603,12 +625,12 @@ function smd_prognostics_ack($msg = '')
         n. startTable('', '', 'txp-list');
 
     if ($errnum > 0) {
-        foreach($hashmod as $naughty) {
+        foreach ($hashmod as $naughty) {
             $sel = in_array($naughty, $smd_prog_ack);
             echo tr(td(checkbox('selected[]', $naughty, $sel), '', 'multi-edit').tda(gTxt('smd_prognostics_lbl_hashmod')).tda($naughty));
         }
 
-        foreach($nok as $naughty) {
+        foreach ($nok as $naughty) {
             $sel = in_array($naughty, $smd_prog_ack);
             echo tr(td(checkbox('selected[]', $naughty, $sel), '', 'multi-edit').tda(gTxt('smd_prognostics_lbl_changed')).tda($naughty));
 
@@ -619,7 +641,7 @@ function smd_prognostics_ack($msg = '')
             }
         }
 
-        foreach($miss as $naughty) {
+        foreach ($miss as $naughty) {
             $sel = in_array($naughty, $smd_prog_ack);
             echo tr(td(checkbox('selected[]', $naughty, $sel), '', 'multi-edit').tda(gTxt('smd_prognostics_lbl_missing')).tda($naughty));
 
@@ -628,7 +650,7 @@ function smd_prognostics_ack($msg = '')
             }
         }
 
-        foreach($added as $naughty) {
+        foreach ($added as $naughty) {
             $sel = in_array($naughty, $smd_prog_ack);
             echo tr(td(checkbox('selected[]', $naughty, $sel), '', 'multi-edit').tda(gTxt('smd_prognostics_lbl_added')).tda($naughty));
 
@@ -687,6 +709,7 @@ EOS
     if ($csi && $forensics) {
         // Send the forensics off.
         $to = get_pref('smd_prognostics_mailto_csi', '');
+
         if ($to) {
             $subject = gTxt('smd_prognostics_subject_csi', array('{site}' => get_pref('siteurl')));
             $hdrs = smd_prognostics_header_info('smd_frognostics');
@@ -696,8 +719,10 @@ EOS
                 ((isset($forensics['miss'])) ? n.n.gTxt('smd_prognostics_preamble_miss').n.join(n,$forensics['miss']) : '').
                 ((isset($forensics['added'])) ? n.n.gTxt('smd_prognostics_preamble_added').n.join(n,$forensics['added']) : '').
                 ((isset($forensics['txp_log'])) ? n.n.gTxt('smd_prognostics_preamble_txplog').n.join(n,$forensics['txp_log']) : n.n.gTxt('smd_prognostics_no_log_entries'));
+
             if (isset($forensics['files'])) {
                 $body .= n.n.gTxt('smd_prognostics_preamble_files');
+
                 foreach ($forensics['files'] as $fn => $content) {
                     $body .= n.n.$fn.n.n.$content.n;
                 }
@@ -708,7 +733,8 @@ EOS
     }
 }
 
-// ---------- File management
+// ----------
+// File management
 function smd_prognostics_files($msg = '')
 {
     global $smd_prognostics_event, $smd_prognostics_checksums;
@@ -726,6 +752,7 @@ function smd_prognostics_files($msg = '')
 
     if ($submit) {
         $outfile = array();
+
         foreach ($smd_prognostics_files as $file) {
             $content = smd_prognostics_prep_file($file);
             $outfile[] = $file.': ('.md5($content).')';
@@ -733,18 +760,23 @@ function smd_prognostics_files($msg = '')
 
         if (is_writable(dirname($smd_prognostics_checksums))) {
             $fh = @fopen($smd_prognostics_checksums, "w");
+
             if ($fh) {
                 fwrite($fh, join(n, $outfile));
 
                 if ($adds) {
                     $additions = array_diff($filelist, $smd_prognostics_files);
                     $added = array();
+
                     foreach ($additions as $addition) {
                         $added[] = $addition.': (NULL)';
                     }
+
                     fwrite($fh, n.join(n, $added));
                 }
+
                 fclose($fh);
+
                 smd_prognostics_self_hash();
                 smd_do_prognostics(2); // Silently acknowledge all the files
                 set_pref('smd_prognostics_lastdetect', '', 'smd_prognos', PREF_HIDDEN, 'text_input');
@@ -778,7 +810,7 @@ function smd_prognostics_files($msg = '')
     if ($filelist) {
         $filez = array();
 
-        foreach($filelist as $key => $val) {
+        foreach ($filelist as $key => $val) {
             $filez[$val] = $filelist[$key];
         }
 
@@ -808,7 +840,8 @@ function smd_prognostics_files($msg = '')
         n. '</div></div>';
 }
 
-// ---------- Setup / prefs
+// ----------
+// Setup / prefs
 function smd_prognostics_setup($msg = '')
 {
     global $smd_prognostics_event, $smd_prognostics_checksums, $prefs;
@@ -870,6 +903,7 @@ function smd_prognostics_setup($msg = '')
             $tween[$idx] = ($idx==0) ? '00:00' : '23:59';
         } else {
             $timeparts = do_list($val, ':');
+
             foreach ($timeparts as $num) {
                 if (!is_numeric($num)) {
                     $tween[$idx] = ($idx==0) ? '00:00' : '23:59';
@@ -1106,7 +1140,8 @@ function smd_prognostics_setup($msg = '')
         n. '</div>';
 }
 
-// ----------  Security advice
+// ----------
+// Security advice
 function smd_prognostics_advice($msg = '')
 {
     global $smd_prognostics_event, $prefs, $event, $DB;
@@ -1132,6 +1167,7 @@ function smd_prognostics_advice($msg = '')
     }
 
     // New Txp version/branch available?
+    // @todo json_decode() not unserialize() any more
     include_once txpath.'/include/txp_diag.php';
     $now = time();
     $updateInfo = unserialize(get_pref('smd_prognostics_last_update_check', ''));
@@ -1166,6 +1202,7 @@ function smd_prognostics_advice($msg = '')
     $res = @safe_query('SELECT id INTO OUTFILE "'.$randfile.'" FIELDS TERMINATED BY "\t" LINES TERMINATED BY "\n" FROM txp_image WHERE 1 LIMIT 1');
     if (mysqli_error($DB->link) == '') {
         $checks[] = gTxt('smd_prognostics_sql_file_privs');
+
         if (is_file($randfile)) {
             @unlink($randfile);
         }
@@ -1184,7 +1221,7 @@ function smd_prognostics_advice($msg = '')
         n. startTable('', '', 'smd_prognostics_advice');
 
     if ($checks) {
-        foreach($checks as $check) {
+        foreach ($checks as $check) {
             echo n. tr(tda($check));
         }
     } else {
@@ -1195,7 +1232,8 @@ function smd_prognostics_advice($msg = '')
         n. '</div></div>';
 }
 
-// ---------- Common buttons
+// ----------
+// Common buttons
 function smd_prognostics_button_bar($active = '')
 {
     global $smd_prognostics_event;
@@ -1217,8 +1255,10 @@ function smd_prognostics_button_bar($active = '')
         , ' class="txp-buttons"');
 }
 
-// ---------- Hash the hashfile
-function smd_prognostics_self_hash() {
+// ----------
+// Hash the hashfile
+function smd_prognostics_self_hash()
+{
     global $smd_prognostics_checksums;
 
     if (file_exists($smd_prognostics_checksums)) {
@@ -1227,11 +1267,14 @@ function smd_prognostics_self_hash() {
     } else {
         $hash = NULL;
     }
+
     set_pref('smd_prognostics_sumhash', $hash, 'smd_prognos', PREF_HIDDEN, 'text_input');
 }
 
-// ---------- Compile list of files to monitor
-function smd_prognostics_readfiles() {
+// ----------
+// Compile list of files to monitor
+function smd_prognostics_readfiles()
+{
     $filelist = array();
 
     $smd_prognostics_listloc = get_pref('smd_prognostics_listloc', '');
@@ -1243,31 +1286,40 @@ function smd_prognostics_readfiles() {
             $filelist = array_merge($filelist, smd_prognostics_rglob("*", GLOB_MARK, $loc, $excludes), smd_prognostics_rglob(".*", GLOB_MARK, $loc, $excludes));
         }
     }
+
     return $filelist;
 }
 
-// ---------- Prepare file contents for md5. Assumes file exists
+// ----------
+// Prepare file contents for md5. Assumes file exists.
 // Checks to see if large files are binary before wasting time stripping newlines and stuff
-function smd_prognostics_prep_file($file) {
+function smd_prognostics_prep_file($file)
+{
     $content = file_get_contents($file);
     $stat = stat($file);
     $dostrip = true;
+
     // Perform the strip regardless on files < 1Kb as it has little impact
     if ($stat['size'] > 1024000) {
         $part = substr($content, 0, 1536000); // First 1.5KB
+
         if (strpos($part, 0x00) || (strpos($part, 0x0D) !== false) || (strpos($part, 0x0A) !== false)) {
             // Likely a binary file: leave it be
             $dostrip = false;
         }
     }
+
     if ($dostrip) {
         $content = str_replace(array("\r\n", "\$HeadURL: http:"), array("\n", "\$HeadURL: https:"), $content);
     }
+
     return $content;
 }
 
-// ---------- Pre-compute excluded files and dirs, expanding wildcards in the process
-function smd_prognostics_ignore_list() {
+// ----------
+// Pre-compute excluded files and dirs, expanding wildcards in the process.
+function smd_prognostics_ignore_list()
+{
     global $smd_prognostics_checksums;
 
     $excl = do_list(get_pref('smd_prognostics_excludir', ''));
@@ -1291,11 +1343,16 @@ function smd_prognostics_ignore_list() {
 }
 
 // Frankensteined from http://snipplr.com/view/16233/recursive-glob/
-function smd_prognostics_rglob($pattern, $flags=0, $path='', $excludes = array(), $excl=array(), $ign='') {
+function smd_prognostics_rglob($pattern, $flags = 0, $path = '', $excludes = array(), $excl = array(), $ign = '')
+{
     if (!$path && ($dir = dirname($pattern)) != '.') {
-        if ($dir == '\\' || $dir == DS) $dir = '';
+        if ($dir == '\\' || $dir == DS) {
+            $dir = '';
+        }
+
         return (array)smd_prognostics_rglob(basename($pattern), $flags, $dir . DS, $excludes);
     }
+
     $paths = glob($path . '*', GLOB_ONLYDIR | GLOB_NOSORT);
     $files = glob($path . $pattern, $flags);
 
@@ -1303,24 +1360,29 @@ function smd_prognostics_rglob($pattern, $flags=0, $path='', $excludes = array()
         foreach ($paths as $p) {
             $parts = explode(DS, $p);
             $pinfo = array_pop($parts);
+
             if (!in_array($pinfo, $excludes[0])) {
                 $files = array_merge((array)$files, (array)smd_prognostics_rglob($pattern, $flags, $p . DS, $excludes));
-                foreach($files as $idx => $theFile) {
+
+                foreach ($files as $idx => $theFile) {
                     $parts = explode(DS, $theFile);
                     $fex = array_pop($parts);
                     $rex = ($excludes[1]) ? preg_match($excludes[1], $fex) : false;
-                    if($fex=='' || in_array($fex, $excludes[2]) || $rex) {
+
+                    if ($fex == '' || in_array($fex, $excludes[2]) || $rex) {
                         unset($files[$idx]);
                     }
                 }
             }
         }
     }
+
     return $files;
 }
 
 // Format forensic data for a file
-function smd_prognostics_forensic_output($file, $fi) {
+function smd_prognostics_forensic_output($file, $fi)
+{
     global $prefs;
 
     $dform = $prefs['dateformat'];
@@ -1336,16 +1398,22 @@ function smd_prognostics_forensic_output($file, $fi) {
     return $out;
 }
 
-// ---------- Does what it says on the tin
-// Assumes 'textpattern' is the admin-side directory if server var not set. Must fix in core one day with true constant
-function smd_prognostics_guess_admin_dir() {
+// ----------
+// Does what it says on the tin
+// Assumes 'textpattern' is the admin-side directory if server var not set.
+// @todo Use core admin dir constants, including multi-site.
+function smd_prognostics_guess_admin_dir()
+{
     $admindir = trim(dirname($_SERVER['PHP_SELF']), '/\\');
     $admindir = (empty($admindir)) ? 'textpattern' : $admindir;
+
     return $admindir;
 }
 
-// ---------- Get common server info for mail headers, etc
-function smd_prognostics_header_info($fromname) {
+// ----------
+// Get common server info for mail headers, etc
+function smd_prognostics_header_info($fromname)
+{
     $domainparts = do_list(doStrip(serverSet('SERVER_NAME')), '.');
     $numparts = count($domainparts);
     $domain = $domainparts[$numparts-2] . '.' . $domainparts[$numparts-1];
@@ -1371,20 +1439,24 @@ function smd_prognostics_header_info($fromname) {
 }
 
 // Multi-file dropdown selection
-function smd_prognostics_multisel($selname='', $tree=array(), $sel=array()) {
+function smd_prognostics_multisel($selname = '', $tree = array(), $sel = array())
+{
     $out[] = '<select id="'.$selname.'" name="'.$selname.'[]" class="list" style="height:400px;" multiple="multiple">';
+
     foreach ($tree as $leaf) {
         $selected='';
+
         if (in_array($leaf, $sel)) {
             $selected = ' selected="selected"';
         }
 
         $out[] = t.'<option'.$selected.'>'.htmlspecialchars($leaf).'</option>'.n;
     }
+
     $out[] = '</select>';
+
     return join('',$out);
 }
-
 
 
 //****************************************************************
@@ -1394,12 +1466,15 @@ function smd_prognostics_multisel($selname='', $tree=array(), $sel=array()) {
 // Version          : 0.3.1.1
 //
 //***************************************************************
-class smd_prog_PhProtector {
+class smd_prog_PhProtector
+{
     var $SHOW_ERRORS;
     var $do_xss;
 
-    public function __construct($show_errors) {
-        $this->SHOW_ERRORS=$show_errors;
+    public function __construct($show_errors)
+    {
+        $this->SHOW_ERRORS = $show_errors;
+
         if ($this->SHOW_ERRORS) {
             error_reporting(E_ERROR | E_WARNING | E_PARSE);  //Show errors
             ini_set('display_errors', "1"); //display errors
@@ -1407,6 +1482,7 @@ class smd_prog_PhProtector {
             ini_set('display_errors', "0"); //display errors
             ini_set('log_errors', "1"); //log_errors
         }
+
         $this->do_xss = get_pref('smd_prognostics_xss', 0);
     }
 
@@ -1414,7 +1490,8 @@ class smd_prog_PhProtector {
     * Main function to be called in a index page that redirects to other pages
     *
     */
-    public function isMalicious() {
+    public function isMalicious()
+    {
         $sqli = 0;
 
         $sqli = callback_event('smd_frognostics', 'sql_injection', false);
@@ -1422,11 +1499,12 @@ class smd_prog_PhProtector {
         if (!$sqli) {
             $num_bad_words1 = $this->CheckGet();
             $num_bad_words2 = $this->CheckPost();
-
             $thresh = explode(',', get_pref('smd_prognostics_inject_sensitivity', 1));
+
             if (!isset($thresh[1])) {
                 $thresh[1] = $thresh[0];
             }
+
             $thresh[0] = is_numeric($thresh[0]) ? $thresh[0] : 1;
             $thresh[1] = is_numeric($thresh[1]) ? $thresh[1] : 1;
 
@@ -1443,7 +1521,8 @@ class smd_prog_PhProtector {
     }
 
     //check for sql injection and XSS in Post variables
-    private function CheckPost() {
+    private function CheckPost()
+    {
         $num_bad_words = 0;
 
         foreach($_POST as $campo => $input) {
@@ -1455,6 +1534,7 @@ class smd_prog_PhProtector {
                     $_POST[$campo]= htmlentities($_POST[$campo], ENT_NOQUOTES);
                 }
             }
+
             $num_bad_words = $num_bad_words + $this->wordExists($input); //SQL INJECTION
         }
 
@@ -1462,7 +1542,8 @@ class smd_prog_PhProtector {
     }
 
     //check for sql injection and XSS in GET variables
-    private function CheckGet() {
+    private function CheckGet()
+    {
         $num_bad_words = 0;
 
         foreach($_GET as $campo => $input) {
@@ -1474,7 +1555,9 @@ class smd_prog_PhProtector {
                     $_GET[$campo]= htmlentities($_GET[$campo], ENT_NOQUOTES);
                 }
             }
+
             $strinput = (is_array($input)) ? join('', $input) : $input;
+
             if($this->isIdInjection($campo, $strinput)){ //SQL ID INJECTION
                 $num_bad_words =    $num_bad_words + 0.5;
             }
@@ -1491,7 +1574,8 @@ class smd_prog_PhProtector {
     *   \b[^a-z]*?drop[^a-z]*?\b
     *    http://www.pagecolumn.com/tool/regtest.htm
     **//*        "/*","+"               */
-    private function wordExists($input) {
+    private function wordExists($input)
+    {
         $num_bad_words = 0;
         $input = is_array($input) ? $input : array($input);
 
@@ -1520,8 +1604,9 @@ class smd_prog_PhProtector {
         $baddelim2 = "[^a-z]*";
         $badwords= array("@@version", "@@datadir", "user", "version");
 
-        foreach($badwords as $badword) {
+        foreach ($badwords as $badword) {
             $expression = "/".$baddelim1.strtolower($badword).$baddelim2."/";
+
             foreach ($input as $wrd) {
                 if (preg_match ($expression, strtolower($wrd))) {
 //dmp('*BW*',$badword, $wrd);
@@ -1538,8 +1623,9 @@ class smd_prog_PhProtector {
         $baddelim2 = "[^a-z]+";
         $badwords= array("benchmark", "--", "varchar", "convert", "char", "limit", "information_schema","table_name", "from", "where", "order");
 
-        foreach($badwords as $badword) {
+        foreach ($badwords as $badword) {
             $expression = "/".$baddelim1.strtolower($badword).$baddelim2."/";
+
             foreach ($input as $wrd) {
                 if (preg_match ($expression, strtolower($wrd))) {
 //dmp('*B-W-A*',$badword, $wrd);
@@ -1556,11 +1642,12 @@ class smd_prog_PhProtector {
     *   return true if an ID is not really an ID
     *
     **/
-    private function isIDInjection($campo, $input) {
+    private function isIDInjection($campo, $input)
+    {
         $reg="/^id/";
 
-        if(preg_match($reg, $campo)) {
-            if(!$this->stringIsNumberNotZero($input)) {
+        if (preg_match($reg, $campo)) {
+            if (!$this->stringIsNumberNotZero($input)) {
                 return true;     // if is ID and NOT INTEGER or NULL -> SQL INJECTION!!
             }
         }
@@ -1572,10 +1659,12 @@ class smd_prog_PhProtector {
     *   return true if the string is a number (different from 0, the id could not be zero!)
     *  TODO: check if *all* chars are zero and fail, e.g. id=0000
     **/
-    private function stringIsNumberNotZero( $string ) {
+    private function stringIsNumberNotZero($string)
+    {
         if (empty($string)) {
             return false;
         }
+
         return ctype_digit($string);
     }
 } //end class
