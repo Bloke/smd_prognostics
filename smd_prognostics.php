@@ -17,7 +17,7 @@ $plugin['name'] = 'smd_prognostics';
 // 1 = Plugin help is in raw HTML.  Not recommended.
 # $plugin['allow_html_help'] = 1;
 
-$plugin['version'] = '0.5.0';
+$plugin['version'] = '0.5.1';
 $plugin['author'] = 'Stef Dawson';
 $plugin['author_uri'] = 'https://stefdawson.com/';
 $plugin['description'] = 'Pro-active diagnostics that alarm when things have changed in Textpattern';
@@ -589,7 +589,7 @@ function smd_prognostics_ack($msg = '')
     $med = '';
 
     echo n. '<div class="txp-layout">'.
-        n. '<div class="txp-layout-2col">'.
+        n. '<div class="txp-layout-4col">'.
         n. '<h1 class="txp-heading">'.
         n. gTxt('smd_prognostics_ttl_ack').
         n. '</h1>'.
@@ -597,7 +597,7 @@ function smd_prognostics_ack($msg = '')
         n. '<div id="'.$smd_prognostics_event.'_control" class="txp-layout-2col">'.
         n. smd_prognostics_button_bar('ack').
         n. '</div>'.
-        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-container">'.
+        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-layout-1col">'.
         n. '<form class="smd_prognostics-ack-form" name="longform" method="post" action="?event='.$smd_prognostics_event.a.'step=smd_prognostics_ack'.a.'smd_prognostics_suppress=1">'.
         n. '<div class="txp-listtables">'.
         n. startTable('', '', 'txp-list');
@@ -796,7 +796,7 @@ function smd_prognostics_files($msg = '')
         n. '<div id="'.$smd_prognostics_event.'_control" class="txp-layout-2col">'.
         n. smd_prognostics_button_bar('fil').
         n. '</div>'.
-        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-container">'.
+        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-layout-1col">'.
         n. '<form class="smd_prognostics-files-form" method="post" action="?event='.$smd_prognostics_event.a.'step=smd_prognostics_files">'.
         n. startTable('', '', 'txp-list').
         n. tr(tdcs(gTxt('smd_prognostics_currmon', array('{curr}' => $moncount, '{outof}' => $allcount)) .(($showfiles) ? br.br. gTxt('smd_prognostics_monfiles_explain') : ''), 1, 400)).
@@ -975,7 +975,7 @@ function smd_prognostics_setup($msg = '')
         n. '<div id="'.$smd_prognostics_event.'_control" class="txp-layout-2col">'.
         n. smd_prognostics_button_bar('set').
         n. '</div>'.
-        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-container">'.
+        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-layout-1col">'.
         n. '<form class="smd_prognostics-setup-form" method="post" action="?event='.$smd_prognostics_event.a.'step=smd_prognostics_setup">'.
         n. startTable('', '', 'smd_prognostics_setup').
         n. tr(tdcs(hed(gTxt('smd_prognostics_ttl_monopts'), 3), 2)).
@@ -1180,7 +1180,7 @@ function smd_prognostics_advice($msg = '')
         n. '<div id="'.$smd_prognostics_event.'_control" class="txp-layout-2col">'.
         n. smd_prognostics_button_bar('adv').
         n. '</div>'.
-        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-container">'.
+        n. '<div id="'.$smd_prognostics_event.'_container" class="txp-layout-1col">'.
         n. startTable('', '', 'smd_prognostics_advice');
 
     if ($checks) {
