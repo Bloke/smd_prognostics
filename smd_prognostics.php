@@ -734,12 +734,42 @@ EOS
 }
 
 // ----------
+function smd_prognostics_assign_var(&$target, $var)
+{
+    $key = key($var);
+
+    if (is_array($var[$key])) {
+        smd_prognostics_assign_var($target[$key], $var[$key]);
+    } else {
+        if ($key == 0) {
+            $target[] = $var[$key];
+        } else {
+            $target[$key] = $var[$key];
+        }
+    }
+}
+
+// ----------
 // File management
 function smd_prognostics_files($msg = '')
 {
     global $smd_prognostics_event, $smd_prognostics_checksums;
 
-    extract(doSlash(gpsa(array('submit'))));
+    // Pre-process the incoming 'data' blob back into $_POST variables.
+    // This bypasses the max_input_vars restriction when dealing with
+    // humungous arrays of values > 1000 rows.
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['data'])) {
+        $vars = explode('&', $_POST['data']);
+        $data = array();
+
+        foreach ($vars as $var) {
+            parse_str($var, $variable);
+            smd_prognostics_assign_var($_POST, $variable);
+        }
+
+        $submit = 1;
+    }
+
     $smd_prognostics_files = gps('smd_prognostics_files');
 
     if (!is_array($smd_prognostics_files)) {
@@ -748,6 +778,7 @@ function smd_prognostics_files($msg = '')
 
     $adds = (strpos(get_pref('smd_prognostics_check_for'), 'add') !== false);
     $filelist = smd_prognostics_readfiles();
+
     $allcount = count($filelist);
 
     if ($submit) {
@@ -837,7 +868,18 @@ function smd_prognostics_files($msg = '')
         n. endTable().
         n. tInput().
         n. '</form>'.
-        n. '</div></div>';
+        n. '</div></div>' . script_js(<<<EOJS
+$(function() {
+    $('.smd_prognostics-files-form').submit(function(event) {
+        var me = $(this);
+        var data = me.serialize();
+        me.find("input, textarea, select, button").remove();
+        me.append("<input type='hidden' class='data' name='data' />");
+        me.find("input.data").val(data);
+    });
+});
+EOJS
+        );
 }
 
 // ----------
@@ -1282,7 +1324,8 @@ function smd_prognostics_readfiles()
 
     if ($smd_prognostics_listloc) {
         foreach (do_list($smd_prognostics_listloc) as $loc) {
-            // NOTE: not using GLOB_BRACE to grab regular and dot files, since it's not always available cross-OS
+            // NOTE: *not* using GLOB_BRACE to grab regular and dot files,
+            // since it's not always available cross-OS.
             $filelist = array_merge($filelist, smd_prognostics_rglob("*", GLOB_MARK, $loc, $excludes), smd_prognostics_rglob(".*", GLOB_MARK, $loc, $excludes));
         }
     }
