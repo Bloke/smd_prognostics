@@ -17,7 +17,7 @@ $plugin['name'] = 'smd_prognostics';
 // 1 = Plugin help is in raw HTML.  Not recommended.
 # $plugin['allow_html_help'] = 1;
 
-$plugin['version'] = '0.5.1';
+$plugin['version'] = '0.5.0';
 $plugin['author'] = 'Stef Dawson';
 $plugin['author_uri'] = 'https://stefdawson.com/';
 $plugin['description'] = 'Pro-active diagnostics that alarm when things have changed in Textpattern';
@@ -1615,7 +1615,7 @@ class smd_prog_PhProtector
     *   return true if injection sql word is found.
     *   The input is tested if is equal to a sql injection pattern
     *   \b[^a-z]*?drop[^a-z]*?\b
-    *    http://www.pagecolumn.com/tool/regtest.htm
+    *    https://www.pagecolumn.com/tool/regtest.htm
     **//*        "/*","+"               */
     private function wordExists($input)
     {
@@ -1802,7 +1802,7 @@ h3. Plugin options
 ; %Restrict prognostic config to%
 : If you have to issue Publisher / Managing Editor privs to someone else as well as yourself but don't want anyone messing with the plugin settings, put a list of permitted user names in this box. %(warning)Be careful. The names are case-sensitive and if you misspell a name you can lock yourself out of editing the settings!%
 ; %Admin-side URL%
-: The URL of your 'textpattern' admin side. This is usually @http://site.com/textpattern@ but if you are running "multi-site":#smd_proghelp_multisite or have otherwise altered the directory, you can specify it here.
+: The URL of your 'textpattern' admin side. This is usually @https://site.com/textpattern@ but if you are running "multi-site":#smd_proghelp_multisite or have otherwise altered the directory, you can specify it here.
 ; %Prognostics folder%
 : The folder where the prognostics checksums file will reside. The directory must already exist and be writable, or your chosen location will be ignored. It is *highly recommended* that this folder be outside of your website document root, i.e. in a non-web-accessible location.
 ; %Unique prefix%

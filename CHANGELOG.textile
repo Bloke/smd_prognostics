@@ -1,9 +1,10 @@
 h1. Changelog
 
-h2. 0.5.0 - 2019-MM-DD
+h2. 0.5.0 - 2020-12-14
 
-* For Textpattern 4.7.x.
+* For Textpattern 4.7.2+.
 * Use site URL correctly in language string notifications.
+* Fix max_input_vars being exceeded on Files save.
 
 h2. 0.4.1 - 2019-02-19
 
