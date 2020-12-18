@@ -17,7 +17,7 @@ $plugin['name'] = 'smd_prognostics';
 // 1 = Plugin help is in raw HTML.  Not recommended.
 # $plugin['allow_html_help'] = 1;
 
-$plugin['version'] = '0.5.0';
+$plugin['version'] = '0.5.1';
 $plugin['author'] = 'Stef Dawson';
 $plugin['author_uri'] = 'https://stefdawson.com/';
 $plugin['description'] = 'Pro-active diagnostics that alarm when things have changed in Textpattern';
@@ -153,7 +153,7 @@ smd_prognostics_ttl_setup => Prognostic setup
 smd_prognostics_txpdir => Admin-side URL: 
 smd_prognostics_warn_loc => File locations changed. Update your <a href="index.php?event=smd_prognostics&#38;;step=smd_prognostics_files">list of files</a> now
 smd_prognostics_with =>  with: 
-smd_prognostics_xss => XSS shield
+smd_prognostics_xss => XSS shield: 
 smd_prognostics_xss_explain => (may break Textiled comments)
 EOT;
 
@@ -1057,7 +1057,7 @@ function smd_prognostics_setup($msg = '')
         n. tr(tdcs(hed(gTxt('smd_prognostics_ttl_monopts'), 3), 2)).
         n. tr(
             tda(gTxt('smd_prognostics_check_where'), ' class="smd_label"').
-            tda(radioSet(
+            n.tda(radioSet(
                 array(
                     'admin' => gTxt('no'),
                     'adminpublic' => gTxt('yes')
@@ -1065,114 +1065,114 @@ function smd_prognostics_setup($msg = '')
         ).
         n. tr(
             tda(gTxt('smd_prognostics_check_freq'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_check_freq', $smd_prognostics_check_freq, '','','',15).sp.gTxt('smd_prognostics_seconds'))
+            n.tda(fInput('text', 'smd_prognostics_check_freq', $smd_prognostics_check_freq, '','','',15).sp.gTxt('smd_prognostics_seconds'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_check_between'), ' class="smd_label"').
-            tda(
+            n.tda(
                 fInput('text', 'smd_prognostics_check_between[]', $tweens[0], '','','',15).
-                gTxt('smd_prognostics_and').
-                fInput('text', 'smd_prognostics_check_between[]', $tweens[1], '','','',15).sp.gTxt('smd_prognostics_hms')
+                n.gTxt('smd_prognostics_and').
+                n.fInput('text', 'smd_prognostics_check_between[]', $tweens[1], '','','',15).sp.gTxt('smd_prognostics_hms')
             )
         ).
         n. tr(
             tda(gTxt('smd_prognostics_check_qty'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_check_qty', $smd_prognostics_check_qty, '','','',15))
+            n.tda(fInput('text', 'smd_prognostics_check_qty', $smd_prognostics_check_qty, '','','',15))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_alarm_freq'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_alarm_freq', $smd_prognostics_alarm_freq, '','','',15).sp.gTxt('smd_prognostics_seconds'))
+            n.tda(fInput('text', 'smd_prognostics_alarm_freq', $smd_prognostics_alarm_freq, '','','',15).sp.gTxt('smd_prognostics_seconds'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_notify_via'), ' class="smd_label"').
-            tda(
-                checkbox('smd_prognostics_notify_via[]', 'txp', strpos($smd_prognostics_notify_via, 'txp') !== false) .
-                '<label>'.gTxt('smd_prognostics_notify_txp').'</label>'.
-                checkbox('smd_prognostics_notify_via[]', 'email', strpos($smd_prognostics_notify_via, 'email') !== false).
-                '<label>'.gTxt('smd_prognostics_notify_email').'</label>'
+            n.tda(
+                checkbox('smd_prognostics_notify_via[]', 'txp', strpos($smd_prognostics_notify_via, 'txp') !== false, 0, 'smd_prognostics_notify_via_txp') .
+                n.'<label for="smd_prognostics_notify_via_txp">'.gTxt('smd_prognostics_notify_txp').'</label>'.
+                sp.checkbox('smd_prognostics_notify_via[]', 'email', strpos($smd_prognostics_notify_via, 'email') !== false, 0, 'smd_prognostics_notify_via_email').
+                n.'<label for="smd_prognostics_notify_via_email">'.gTxt('smd_prognostics_notify_email').'</label>'
             )
         ).
         n. tr(
             tda(gTxt('smd_prognostics_mailto'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_mailto', $smd_prognostics_mailto, '','','',60).sp.gTxt('smd_prognostics_csv'))
+            n.tda(fInput('text', 'smd_prognostics_mailto', $smd_prognostics_mailto, '','','',60).sp.gTxt('smd_prognostics_csv'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_mailto_csi'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_mailto_csi', $smd_prognostics_mailto_csi, '','','',60).sp.gTxt('smd_prognostics_csv'))
+            n.tda(fInput('text', 'smd_prognostics_mailto_csi', $smd_prognostics_mailto_csi, '','','',60).sp.gTxt('smd_prognostics_csv'))
         ).
         n. tr(tdcs(hed(gTxt('smd_prognostics_ttl_realopts'), 3), 2)).
         n. tr(
             tda(gTxt('smd_prognostics_req_headers'), ' class="smd_label"').
-            tda(
-                checkbox('smd_prognostics_req_headers[]', 'TRACE', $rh_trace).
-                '<label>'.gTxt('smd_prognostics_rh_trace').'</label>'.
-                checkbox('smd_prognostics_req_headers[]', 'PUT', $rh_put).
-                '<label>'.gTxt('smd_prognostics_rh_put').'</label>'.
-                checkbox('smd_prognostics_req_headers[]', 'DELETE', $rh_del).
-                '<label>'.gTxt('smd_prognostics_rh_del').'</label>'
+            n.tda(
+                checkbox('smd_prognostics_req_headers[]', 'TRACE', $rh_trace, 0, 'smd_prognostics_req_headers_trace').
+                n.'<label for="smd_prognostics_req_headers_trace">'.gTxt('smd_prognostics_rh_trace').'</label>'.
+                sp.checkbox('smd_prognostics_req_headers[]', 'PUT', $rh_put, 0, 'smd_prognostics_req_headers_put').
+                n.'<label for="smd_prognostics_req_headers_put">'.gTxt('smd_prognostics_rh_put').'</label>'.
+                sp.checkbox('smd_prognostics_req_headers[]', 'DELETE', $rh_del, 0, 'smd_prognostics_req_headers_delete').
+                n.'<label for="smd_prognostics_req_headers_delete">'.gTxt('smd_prognostics_rh_del').'</label>'
             )
         ).
         n. tr(
             tda(gTxt('smd_prognostics_sql_inject'), ' class="smd_label"').
-            tda(
+            n.tda(
                 selectInput('smd_prognostics_sql_inject[]', $throw_codes, $throws[0], 0).
-                gTxt('smd_prognostics_with').
-                fInput('text', 'smd_prognostics_sql_inject[]', $throws[1], '','','',60).br.
-                gTxt('smd_prognostics_sensitivity').
-                fInput('text', 'smd_prognostics_inject_sensitivity', $smd_prognostics_inject_sensitivity, '','','',5).sp.gTxt('smd_prognostics_sensitivity_explain').br.
-                gTxt('smd_prognostics_xss').
-                yesnoRadio('smd_prognostics_xss', $smd_prognostics_xss).sp.gTxt('smd_prognostics_xss_explain')
+                n.gTxt('smd_prognostics_with').
+                n.fInput('text', 'smd_prognostics_sql_inject[]', $throws[1], '','','',60).br.
+                n.gTxt('smd_prognostics_sensitivity').
+                n.fInput('text', 'smd_prognostics_inject_sensitivity', $smd_prognostics_inject_sensitivity, '','','',5).sp.gTxt('smd_prognostics_sensitivity_explain').br.
+                n.gTxt('smd_prognostics_xss').
+                n.yesnoRadio('smd_prognostics_xss', $smd_prognostics_xss).sp.gTxt('smd_prognostics_xss_explain')
             )
         ).
         n. tr(
             tda(gTxt('smd_prognostics_send_forensics'), ' class="smd_label"').
-            tda(
-                checkbox('smd_prognostics_rt_forensics[]', 'hdr', $rt_hdr).
-                '<label>'.gTxt('smd_prognostics_rt_hdr').'</label>'.
-                checkbox('smd_prognostics_rt_forensics[]', 'sql', $rt_sql).
-                '<label>'.gTxt('smd_prognostics_rt_sql').'</label>'
+            n.tda(
+                checkbox('smd_prognostics_rt_forensics[]', 'hdr', $rt_hdr, 0, 'smd_prognostics_rt_forensics_hdr').
+                n.'<label for="smd_prognostics_rt_forensics_hdr">'.gTxt('smd_prognostics_rt_hdr').'</label>'.
+                sp.checkbox('smd_prognostics_rt_forensics[]', 'sql', $rt_sql, 0, 'smd_prognostics_rt_forensics_sql').
+                n.'<label for="smd_prognostics_rt_forensics_sql">'.gTxt('smd_prognostics_rt_sql').'</label>'
             )
         ).
         n. tr(tdcs(hed(gTxt('smd_prognostics_ttl_fileopts'), 3), 2)).
         n. tr(
             tda(gTxt('smd_prognostics_check_for'), ' class="smd_label"').
-            tda(
-                checkbox('smd_prognostics_check_for[]', 'add', $adds) .
-                '<label>'.gTxt('smd_prognostics_ch_add').'</label>'.
-                checkbox('smd_prognostics_check_for[]', 'delete', $dels).
-                '<label>'.gTxt('smd_prognostics_ch_del').'</label>'.
-                checkbox('smd_prognostics_check_for[]', 'modify', $mods).
-                '<label>'.gTxt('smd_prognostics_ch_mod').'</label>'
+            n.tda(
+                checkbox('smd_prognostics_check_for[]', 'add', $adds, 0, 'smd_prognostics_check_for_add') .
+                n.'<label for="smd_prognostics_check_for_add">'.gTxt('smd_prognostics_ch_add').'</label>'.
+                sp.checkbox('smd_prognostics_check_for[]', 'delete', $dels, 0, 'smd_prognostics_check_for_delete').
+                n.'<label for="smd_prognostics_check_for_delete">'.gTxt('smd_prognostics_ch_del').'</label>'.
+                sp.checkbox('smd_prognostics_check_for[]', 'modify', $mods, 0, 'smd_prognostics_check_for_modify').
+                n.'<label for="smd_prognostics_check_for_modify">'.gTxt('smd_prognostics_ch_mod').'</label>'
             )
         ).
         n. tr(
             tda(gTxt('smd_prognostics_listloc'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_listloc', $smd_prognostics_listloc, '','','',60).sp.gTxt('smd_prognostics_csv'))
+            n.tda(fInput('text', 'smd_prognostics_listloc', $smd_prognostics_listloc, '','','',60).sp.gTxt('smd_prognostics_csv'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_excludir'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_excludir', $smd_prognostics_excludir, '','','',60).sp.gTxt('smd_prognostics_csv'))
+            n.tda(fInput('text', 'smd_prognostics_excludir', $smd_prognostics_excludir, '','','',60).sp.gTxt('smd_prognostics_csv'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_ignores'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_ignores', $smd_prognostics_ignores, '','','',60).sp.gTxt('smd_prognostics_csv'))
+            n.tda(fInput('text', 'smd_prognostics_ignores', $smd_prognostics_ignores, '','','',60).sp.gTxt('smd_prognostics_csv'))
         ).
         n. tr(tdcs(hed(gTxt('smd_prognostics_ttl_plugopts'), 3), 2)).
         n. tr(
             tda(gTxt('smd_prognostics_auth_users'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_users', $smd_prognostics_users, '','','',60).sp.gTxt('smd_prognostics_csv').sp.gTxt('smd_prognostics_csense'))
+            n.tda(fInput('text', 'smd_prognostics_users', $smd_prognostics_users, '','','',60).sp.gTxt('smd_prognostics_csv').sp.gTxt('smd_prognostics_csense'))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_txpdir'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_txpdir', $smd_prognostics_txpdir, '','','',60))
+            n.tda(fInput('text', 'smd_prognostics_txpdir', $smd_prognostics_txpdir, '','','',60))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_progloc'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_dir', $smd_prognostics_dir, '','','',60))
+            n.tda(fInput('text', 'smd_prognostics_dir', $smd_prognostics_dir, '','','',60))
         ).
         n. tr(
             tda(gTxt('smd_prognostics_progpfx'), ' class="smd_label"').
-            tda(fInput('text', 'smd_prognostics_prefix', $smd_prognostics_prefix, '','','',60))
+            n.tda(fInput('text', 'smd_prognostics_prefix', $smd_prognostics_prefix, '','','',60))
         ).
         n. tr(tda(fInput('submit', 'submit', gTxt('save'), 'publish'))).
         n. endTable().
