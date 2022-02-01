@@ -1434,7 +1434,7 @@ function smd_prognostics_forensic_output($file, $fi)
 
     $out .= $sep . gTxt('smd_prognostics_stat_name') . $file;
     $out .= $sep . gTxt('smd_prognostics_stat_size') . $fi['size'];
-    $out .= $sep . gTxt('smd_prognostics_stat_mod') . strftime($dform, $fi['mtime']);
+    $out .= $sep . gTxt('smd_prognostics_stat_mod') . safe_strftime($dform, $fi['mtime']);
     $out .= $sep . gTxt('smd_prognostics_stat_uid') . $fi['uid'];
     $out .= $sep . gTxt('smd_prognostics_stat_gid') . $fi['gid'];
 
