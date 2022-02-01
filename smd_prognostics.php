@@ -755,6 +755,8 @@ function smd_prognostics_files($msg = '')
 {
     global $smd_prognostics_event, $smd_prognostics_checksums;
 
+    $submit = 0;
+
     // Pre-process the incoming 'data' blob back into $_POST variables.
     // This bypasses the max_input_vars restriction when dealing with
     // humungous arrays of values > 1000 rows.
